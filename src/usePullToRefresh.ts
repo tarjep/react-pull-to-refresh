@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from "react"
+import { RefObject, useEffect, useState } from "react"
 
 const MAX = 128
 const height = 80
@@ -7,7 +7,13 @@ function appr(x: number) {
     return MAX * (1 - Math.exp((-k * x) / MAX))
 }
 
-export const usePullToRefresh = (ref: RefObject<HTMLDivElement | null>, triggerFn: () => void) => {
+export const usePullToRefresh = (
+    ref: RefObject<HTMLDivElement | null>,
+    triggerFn: () => Promise<string>,
+) => {
+    const [loading, setLoading] = useState(false)
+    const [fraction, setFraction] = useState(0)
+
     useEffect(() => {
         if (!ref.current) return
         const item = ref.current
@@ -33,7 +39,7 @@ export const usePullToRefresh = (ref: RefObject<HTMLDivElement | null>, triggerF
                     if (dy <= 0) return
 
                     item.style.transform = `translateY(${dy}px)`
-
+                    setFraction(dy / height)
                     if (dy > height) {
                         triggered = true
                     } else {
@@ -43,19 +49,29 @@ export const usePullToRefresh = (ref: RefObject<HTMLDivElement | null>, triggerF
             }
 
             const touchEnd = async () => {
-                item.style.transition = "transform 0.25s cubic-bezier(.5,0,.5,1.01)"
+                item.style.transition = "transform 0.35s cubic-bezier(.29,-0.01,.31,1.02)"
 
                 if (triggered) {
+                    setLoading(true)
                     item.style.transform = `translateY(${height}px)`
                     triggerFn()
-
-                    setTimeout(() => {
-                        item.style.transform = `translateY(0px)`
-                    }, 2000)
+                        .then(res => {
+                            if (res === "Success") {
+                                console.log("res", res)
+                                item.style.transform = `translateY(0px)`
+                                setLoading(false)
+                                setFraction(0)
+                            }
+                        })
+                        .catch(() => {
+                            item.style.transform = `translateY(0px)`
+                            setLoading(false)
+                            setFraction(0)
+                        })
                 } else {
                     item.style.transform = `translateY(0px)`
+                    setFraction(0)
                 }
-
                 item.addEventListener("transitionend", onTransitionEnd)
                 item.removeEventListener("touchmove", touchMove)
                 item.removeEventListener("touchend", touchEnd)
@@ -74,4 +90,6 @@ export const usePullToRefresh = (ref: RefObject<HTMLDivElement | null>, triggerF
             item.removeEventListener("touchstart", touchStart)
         }
     }, [ref, triggerFn])
+
+    return { loading, fraction }
 }

@@ -1,27 +1,14 @@
-import { useRef } from "react"
-import { usePullToRefresh } from "./usePullToRefresh"
 import "./App.css"
+import { PullToRefresh } from "./PullToRefresh"
 
-const handleTrigger = () => {
-    console.log("Triggered")
-}
+const triggerFn = (): Promise<string> =>
+    new Promise(resolve => {
+        setTimeout(() => resolve("Success"), 3000)
+    })
 
 function App() {
-    const ref = useRef<HTMLDivElement>(null)
-
-    usePullToRefresh(ref, handleTrigger)
-
     return (
-        <div
-            ref={ref}
-            style={{
-                height: "100dvh",
-                overflow: "scroll",
-                padding: "2rem",
-                userSelect: "none",
-                backgroundColor: "lightgrey",
-            }}
-        >
+        <PullToRefresh triggerFn={triggerFn}>
             <h3>What is Lorem Ipsum?</h3>
             <p>
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
@@ -74,7 +61,7 @@ function App() {
                 Ipsum is therefore always free from repetition, injected humour, or
                 non-characteristic words etc.
             </p>
-        </div>
+        </PullToRefresh>
     )
 }
 
