@@ -1,5 +1,6 @@
 import "./App.css"
 import { PullToRefresh } from "./PullToRefresh"
+import { Spinner } from "./Spinner"
 
 const triggerFn = (): Promise<string> =>
     new Promise(resolve => {
@@ -8,7 +9,10 @@ const triggerFn = (): Promise<string> =>
 
 function App() {
     return (
-        <PullToRefresh triggerFn={triggerFn}>
+        <PullToRefresh
+            onRefresh={triggerFn}
+            LoadingIcon={Spinner}
+        >
             <h3>What is Lorem Ipsum?</h3>
             <p>
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem

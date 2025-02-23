@@ -2,14 +2,16 @@ import { ReactNode, useRef } from "react"
 import { usePullToRefresh } from "./usePullToRefresh"
 
 export const PullToRefresh = ({
-    triggerFn,
+    onRefresh,
+    LoadingIcon,
     children,
 }: {
-    triggerFn: () => Promise<string>
+    onRefresh: () => Promise<string>
+    LoadingIcon: () => ReactNode
     children: ReactNode
 }) => {
     const ref = useRef<HTMLDivElement>(null)
-    const { loading, fraction } = usePullToRefresh(ref, triggerFn)
+    const { loading, fraction } = usePullToRefresh(ref, onRefresh)
 
     return (
         <div
@@ -17,35 +19,21 @@ export const PullToRefresh = ({
                 position: "relative",
             }}
         >
-            {fraction > 0 && !loading && (
+            {((fraction > 0 && !loading) || loading) && (
                 <div
                     style={{
                         position: "absolute",
-                        top: 30 * fraction * 1,
                         left: 0,
                         right: 0,
                         display: "flex",
                         justifyContent: "center",
-                        transform: `scale(${fraction})`,
-                        opacity: fraction,
+                        top: loading ? 30 : 30 * fraction * 1,
+                        transform: loading ? "scale(1)" : `scale(${Math.min(fraction, 1)})`,
+                        opacity: loading ? 1 : fraction,
+                        animation: loading ? "spinnerAnim 1s linear infinite" : "",
                     }}
                 >
-                    Opening
-                </div>
-            )}
-            {loading && (
-                <div
-                    style={{
-                        position: "absolute",
-                        top: 30,
-                        left: 0,
-                        right: 0,
-                        display: "flex",
-                        justifyContent: "center",
-                        transform: `scale(${fraction})`,
-                    }}
-                >
-                    Loading
+                    <LoadingIcon />
                 </div>
             )}
             <div

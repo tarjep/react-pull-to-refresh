@@ -9,7 +9,7 @@ function appr(x: number) {
 
 export const usePullToRefresh = (
     ref: RefObject<HTMLDivElement | null>,
-    triggerFn: () => Promise<string>,
+    onRefresh: () => Promise<string>,
 ) => {
     const [loading, setLoading] = useState(false)
     const [fraction, setFraction] = useState(0)
@@ -54,7 +54,8 @@ export const usePullToRefresh = (
                 if (triggered) {
                     setLoading(true)
                     item.style.transform = `translateY(${height}px)`
-                    triggerFn()
+
+                    onRefresh()
                         .then(res => {
                             if (res === "Success") {
                                 console.log("res", res)
@@ -89,7 +90,7 @@ export const usePullToRefresh = (
         return () => {
             item.removeEventListener("touchstart", touchStart)
         }
-    }, [ref, triggerFn])
+    }, [ref, onRefresh])
 
     return { loading, fraction }
 }
