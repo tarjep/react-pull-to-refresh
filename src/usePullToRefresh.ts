@@ -1,7 +1,8 @@
 import { RefObject, useEffect } from "react"
 
 const MAX = 128
-const k = 0.4
+const height = 80
+const k = 0.5
 function appr(x: number) {
     return MAX * (1 - Math.exp((-k * x) / MAX))
 }
@@ -14,45 +15,53 @@ export const usePullToRefresh = (ref: RefObject<HTMLDivElement | null>, triggerF
         const touchStart = (startEvent: TouchEvent) => {
             if (!ref.current) return
 
-            const initialY = startEvent.touches[0].clientY
+            item.style.transition = ""
+            let initialY = startEvent.touches[0].clientY
             let triggered = false
 
             const touchMove = (moveEvent: TouchEvent) => {
                 if (!ref.current) return
 
                 const scrollTop = ref.current.scrollTop
-                if (scrollTop > 0) return
 
-                const currentY = moveEvent.touches[0].clientY
-                const dy = appr(currentY - initialY)
-
-                item.style.transform = `translateY(${dy}px)`
-
-                if (dy > 50) {
-                    triggered = true
+                if (scrollTop > 0) {
+                    initialY = moveEvent.touches[0].clientY
                 } else {
-                    triggered = false
+                    const currentY = moveEvent.touches[0].clientY
+                    const dy = appr(currentY - initialY)
+
+                    if (dy <= 0) return
+
+                    item.style.transform = `translateY(${dy}px)`
+
+                    if (dy > height) {
+                        triggered = true
+                    } else {
+                        triggered = false
+                    }
                 }
             }
 
             const touchEnd = async () => {
-                item.style.transition = "transform 0.2s"
+                item.style.transition = "transform 0.25s cubic-bezier(.5,0,.5,1.01)"
+
                 if (triggered) {
+                    item.style.transform = `translateY(${height}px)`
                     triggerFn()
+
                     setTimeout(() => {
                         item.style.transform = `translateY(0px)`
-                    }, 1000)
+                    }, 2000)
                 } else {
                     item.style.transform = `translateY(0px)`
                 }
-                // listen for transition end event
+
                 item.addEventListener("transitionend", onTransitionEnd)
                 item.removeEventListener("touchmove", touchMove)
                 item.removeEventListener("touchend", touchEnd)
             }
 
             const onTransitionEnd = () => {
-                item.style.transition = ""
                 item.removeEventListener("transitionend", onTransitionEnd)
             }
 

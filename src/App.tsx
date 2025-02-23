@@ -14,7 +14,13 @@ function App() {
     return (
         <div
             ref={ref}
-            style={{ height: "100dvh", overflow: "scroll", padding: "2rem" }}
+            style={{
+                height: "100dvh",
+                overflow: "scroll",
+                padding: "2rem",
+                userSelect: "none",
+                backgroundColor: "lightgrey",
+            }}
         >
             <h3>What is Lorem Ipsum?</h3>
             <p>
